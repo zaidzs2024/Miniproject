@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Voting System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-md rounded-lg p-8 max-w-3xl w-full">
+    <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Online Voting System</h1>
+    <p class="text-center text-gray-600 mb-8">Vote for your favorite candidate below:</p>
+
+    <div id="candidate-list" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Candidates will be dynamically injected here -->
+    </div>
+  </div>
+
+  <script>
+    // Candidate data
+    const candidates = [
+      {
+        id: 1,
+        name: "Candidate A",
+        logo: "https://via.placeholder.com/100?text=A",
+      },
+      {
+        id: 2,
+        name: "Candidate B",
+        logo: "https://via.placeholder.com/100?text=B",
+      },
+      {
+        id: 3,
+        name: "Candidate C",
+        logo: "https://via.placeholder.com/100?text=C",
+      },
+    ];
+
+    // Get the container to display candidates
+    const candidateList = document.getElementById('candidate-list');
+
+    // Function to render candidates
+    function renderCandidates() {
+      candidates.forEach(candidate => {
+        const candidateCard = document.createElement('div');
+        candidateCard.className = 'bg-gray-50 p-4 rounded-lg shadow-md text-center';
+        candidateCard.innerHTML = `
+          <img src="${candidate.logo}" alt="${candidate.name} Logo" class="w-20 h-20 mx-auto mb-4">
+          <h2 class="text-lg font-semibold mb-2">${candidate.name}</h2>
+          <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition" onclick="vote(${candidate.id})">
+            Vote
+          </button>
+        `;
+        candidateList.appendChild(candidateCard);
+      });
+    }
+
+    // Function to handle voting
+    // function vote(candidateId) {
+    //   const selectedCandidate = candidates.find(c => c.id === candidateId);
+    //   alert(`Thank you for voting for ${selectedCandidate.name}!`);
+    // }
+
+    async function vote(candidateId) {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/vote', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ candidate_id: candidateId }),
+        });
+        const data = await response.json();
+        alert(data.message || 'Vote submitted successfully!');
+      } catch (error) {
+        console.error('Error casting vote:', error);
+        alert('An error occurred while casting your vote.');
+      }
+    }
+
+    // Fetch candidates from the backend
+    async function fetchCandidates() {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/candidates');
+        const candidates = await response.json();
+        const candidateList = document.getElementById('candidate-list');
+        candidates.forEach(candidate => {
+          const candidateCard = document.createElement('div');
+          candidateCard.className = 'bg-gray-50 p-4 rounded-lg shadow-md text-center';
+          candidateCard.innerHTML = `
+            <img src="https://via.placeholder.com/100?text=${candidate.name.charAt(0)}" alt="${candidate.name} Logo" class="w-20 h-20 mx-auto mb-4">
+            <h2 class="text-lg font-semibold mb-2">${candidate.name}</h2>
+            <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition" onclick="vote(${candidate.id})">
+              Vote
+            </button>
+          `;
+          candidateList.appendChild(candidateCard);
+        });
+      } catch (error) {
+        console.error('Error fetching candidates:', error);
+      }
+    }
+
+    fetchCandidates();
+
+    // Initialize the candidates rendering
+    renderCandidates();
+
+
+    
+  </script>
+</body>
+</html>
